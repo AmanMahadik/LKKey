@@ -1,5 +1,13 @@
 import mongoose from 'mongoose';
+import dns from 'dns';
 import { seedDatabaseIfEmpty } from './seed';
+
+// Configure public DNS servers to bypass local network limits resolving MongoDB Atlas SRV records
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
+} catch (err) {
+  console.warn('Failed to configure custom DNS servers, falling back to system defaults:', err);
+}
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
