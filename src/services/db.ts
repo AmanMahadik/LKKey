@@ -9,11 +9,7 @@ try {
   console.warn('Failed to configure custom DNS servers, falling back to system defaults:', err);
 }
 
-const MONGODB_URI = process.env.MONGODB_URI;
-
-if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable inside .env');
-}
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://aman:aman7120@aman.mmgejlu.mongodb.net/lkkey?retryWrites=true&w=majority';
 
 /**
  * Global is used here to maintain a cached connection across hot reloads
