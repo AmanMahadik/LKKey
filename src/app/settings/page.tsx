@@ -10,7 +10,9 @@ import {
   Activity, 
   RefreshCw,
   Info,
-  Loader2
+  Loader2,
+  Users,
+  BookOpen
 } from 'lucide-react';
 
 interface HealthData {
@@ -239,6 +241,61 @@ export default function SettingsPage() {
                 {!adminSecret ? 'Configure your Admin Secret to retrieve live metrics.' : 'Gathering system metrics...'}
               </div>
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* Full width Columns for About Us and Workflow */}
+      <div style={{ marginTop: '32px', display: 'grid', gridTemplateColumns: '1fr', gap: '32px' }}>
+        {/* About Us Card */}
+        <div className="section-card">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+            <Users size={18} className="text-secondary" />
+            <h3 className="section-title">About LKKey & Developer Team</h3>
+          </div>
+          <p style={{ fontSize: '13.5px', lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+            <strong>LKKey</strong> is a premium, enterprise-grade lookup data API infrastructure gateway service designed to simplify dynamic query workflows for developer teams. Whether you are indexing pincodes, banking registries, ISD prefix codes, or regional transport parameters, LKKey handles them generically with zero code changes.
+          </p>
+          <p style={{ fontSize: '13.5px', lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+            Developed, engineered, and maintained by the **Developer Team of Aman Mahadik** (Founder & Lead Infrastructure Architect). Built for extreme performance, security, and developer clarity.
+          </p>
+        </div>
+
+        {/* Workflow Guide Card */}
+        <div className="section-card">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
+            <BookOpen size={18} className="text-secondary" />
+            <h3 className="section-title">Developer & User Workflow Guide</h3>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
+            <div style={{ padding: '16px', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
+              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(37,99,235,0.1)', color: 'var(--accent-glow)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: '700', marginBottom: '12px' }}>1</div>
+              <h4 style={{ fontSize: '13.5px', fontWeight: '700', marginBottom: '6px' }}>Authenticate Admin</h4>
+              <p style={{ fontSize: '11.5px', color: 'var(--text-muted)', lineHeight: '1.5' }}>
+                Save your admin secret (default: <code>amanadminsecret123</code>) in this Settings panel to authorize write requests.
+              </p>
+            </div>
+            <div style={{ padding: '16px', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
+              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(37,99,235,0.1)', color: 'var(--accent-glow)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: '700', marginBottom: '12px' }}>2</div>
+              <h4 style={{ fontSize: '13.5px', fontWeight: '700', marginBottom: '6px' }}>Define Dataset Schema</h4>
+              <p style={{ fontSize: '11.5px', color: 'var(--text-muted)', lineHeight: '1.5' }}>
+                Go to <strong>Datasets</strong>, click Create, and define the schema columns, searchable parameters, and natural keys (e.g. <code>rto-codes</code>).
+              </p>
+            </div>
+            <div style={{ padding: '16px', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
+              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(37,99,235,0.1)', color: 'var(--accent-glow)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: '700', marginBottom: '12px' }}>3</div>
+              <h4 style={{ fontSize: '13.5px', fontWeight: '700', marginBottom: '6px' }}>Upload Excel Sheet</h4>
+              <p style={{ fontSize: '11.5px', color: 'var(--text-muted)', lineHeight: '1.5' }}>
+                Drop your sheet in the <strong>Uploads</strong> tab. The parser automatically detects fields and infers states from code prefixes.
+              </p>
+            </div>
+            <div style={{ padding: '16px', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
+              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(37,99,235,0.1)', color: 'var(--accent-glow)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: '700', marginBottom: '12px' }}>4</div>
+              <h4 style={{ fontSize: '13.5px', fontWeight: '700', marginBottom: '6px' }}>Consume Lookup API</h4>
+              <p style={{ fontSize: '11.5px', color: 'var(--text-muted)', lineHeight: '1.5' }}>
+                Generate an API key in <strong>API Keys</strong> and start making fuzzy search queries (e.g. <code>/search?q=Nasik</code>) in your apps.
+              </p>
+            </div>
           </div>
         </div>
       </div>
