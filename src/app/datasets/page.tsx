@@ -8,6 +8,7 @@ import {
   X, 
   Globe, 
   Trash, 
+  Pencil,
   ArrowRight,
   ShieldAlert,
   Loader2,
@@ -44,6 +45,17 @@ export default function DatasetsPage() {
   const [uniqueKeys, setUniqueKeys] = useState('');
   const [submitError, setSubmitError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  // Edit dataset form state
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editId, setEditId] = useState('');
+  const [editName, setEditName] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editSchemaFields, setEditSchemaFields] = useState('');
+  const [editSearchableFields, setEditSearchableFields] = useState('');
+  const [editUniqueKeys, setEditUniqueKeys] = useState('');
+  const [editSubmitError, setEditSubmitError] = useState('');
+  const [editSubmitting, setEditSubmitting] = useState(false);
 
   useEffect(() => {
     // Load admin secret from localStorage if it exists
@@ -177,6 +189,80 @@ export default function DatasetsPage() {
     }
   }
 
+  function handleOpenEditModal(ds: DatasetItem) {
+    setEditId(ds._id);
+    setEditName(ds.name);
+    setEditDescription(ds.description || '');
+    setEditSchemaFields(ds.schemaFields.join(', '));
+    setEditSearchableFields(ds.searchableFields.join(', '));
+    setEditUniqueKeys(ds.uniqueKeys.join(', '));
+    setEditSubmitError('');
+    setShowEditModal(true);
+  }
+
+  async function handleEditDataset(e: React.FormEvent) {
+    e.preventDefault();
+    setEditSubmitError('');
+    setEditSubmitting(true);
+
+    const fieldsArray = editSchemaFields.split(',').map(s => s.trim()).filter(Boolean);
+    const searchableArray = editSearchableFields.split(',').map(s => s.trim()).filter(Boolean);
+    const uniqueArray = editUniqueKeys.split(',').map(s => s.trim()).filter(Boolean);
+
+    // Validation
+    if (!editName || fieldsArray.length === 0 || searchableArray.length === 0) {
+      setEditSubmitError('Missing required fields: name, schema fields, searchable fields');
+      setEditSubmitting(false);
+      return;
+    }
+
+    // Verify searchableFields and uniqueKeys are sub-elements of schemaFields
+    const invalidSearchable = searchableArray.filter(f => !fieldsArray.includes(f));
+    if (invalidSearchable.length > 0) {
+      setEditSubmitError(`Searchable fields must be part of schema fields: ${invalidSearchable.join(', ')}`);
+      setEditSubmitting(false);
+      return;
+    }
+
+    const invalidUnique = uniqueArray.filter(f => !fieldsArray.includes(f));
+    if (invalidUnique.length > 0) {
+      setEditSubmitError(`Unique keys must be part of schema fields: ${invalidUnique.join(', ')}`);
+      setEditSubmitting(false);
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/admin/datasets?id=${editId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-secret': adminSecret
+        },
+        body: JSON.stringify({
+          name: editName,
+          description: editDescription,
+          schemaFields: fieldsArray,
+          searchableFields: searchableArray,
+          uniqueKeys: uniqueArray
+        })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        setEditSubmitError(errData.error || 'Failed to update dataset');
+        return;
+      }
+
+      // Success
+      setShowEditModal(false);
+      fetchDatasets();
+    } catch (err: any) {
+      setEditSubmitError(err.message || 'Network error updating dataset');
+    } finally {
+      setEditSubmitting(false);
+    }
+  }
+
   return (
     <div className="page-container">
       {/* Page Header */}
@@ -261,6 +347,23 @@ export default function DatasetsPage() {
                   <span className="dataset-card-slug">{ds.slug}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <button 
+                    onClick={() => handleOpenEditModal(ds)}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: 'var(--text-muted)',
+                      cursor: 'pointer',
+                      padding: '4px',
+                      borderRadius: '4px',
+                      transition: 'var(--transition)'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent-glow)'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+                    title="Edit Dataset Schema"
+                  >
+                    <Pencil size={16} />
+                  </button>
                   <button 
                     onClick={() => handleDeleteDataset(ds._id, ds.name)}
                     style={{
@@ -462,6 +565,116 @@ export default function DatasetsPage() {
                   disabled={submitting}
                 >
                   {submitting ? 'Creating...' : 'Create Dataset'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT DATASET MODAL */}
+      {showEditModal && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ width: '520px' }}>
+            <div className="modal-header">
+              <h3 className="modal-title">Edit Dataset Schema</h3>
+              <button className="modal-close" onClick={() => setShowEditModal(false)}>
+                <X size={18} />
+              </button>
+            </div>
+            
+            {editSubmitError && (
+              <div style={{ color: 'var(--color-danger)', fontSize: '13px', padding: '10px 14px', backgroundColor: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.15)', borderRadius: '8px', marginBottom: '16px' }}>
+                {editSubmitError}
+              </div>
+            )}
+
+            <form onSubmit={handleEditDataset}>
+              <div className="form-group">
+                <label className="form-label">Dataset Name</label>
+                <input 
+                  type="text" 
+                  value={editName} 
+                  onChange={(e) => setEditName(e.target.value)} 
+                  className="form-input" 
+                  placeholder="e.g. RTO Codes India"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Slug (Uneditable)</label>
+                <input 
+                  type="text" 
+                  value={datasets.find(d => d._id === editId)?.slug || ''} 
+                  className="form-input" 
+                  disabled
+                  style={{ opacity: 0.6, cursor: 'not-allowed' }}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Description</label>
+                <textarea 
+                  value={editDescription} 
+                  onChange={(e) => setEditDescription(e.target.value)} 
+                  className="form-input form-textarea" 
+                  placeholder="Define the purpose of this dataset..."
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Schema Fields</label>
+                <input 
+                  type="text" 
+                  value={editSchemaFields} 
+                  onChange={(e) => setEditSchemaFields(e.target.value)} 
+                  className="form-input" 
+                  placeholder="state, city, rto_code"
+                  required
+                />
+                <span className="form-help">Comma-separated list of expected columns in Excel.</span>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Searchable Fields</label>
+                <input 
+                  type="text" 
+                  value={editSearchableFields} 
+                  onChange={(e) => setEditSearchableFields(e.target.value)} 
+                  className="form-input" 
+                  placeholder="city, state"
+                  required
+                />
+                <span className="form-help">Fields where fuzzy text searching matches. Must be in Schema Fields.</span>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Unique Keys</label>
+                <input 
+                  type="text" 
+                  value={editUniqueKeys} 
+                  onChange={(e) => setEditUniqueKeys(e.target.value)} 
+                  className="form-input" 
+                  placeholder="state, city"
+                />
+                <span className="form-help">Natural keys that prevent duplicate records on re-upload (e.g. unique combo).</span>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '28px' }}>
+                <button 
+                  type="button" 
+                  className="btn-secondary" 
+                  onClick={() => setShowEditModal(false)}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="btn-primary"
+                  disabled={editSubmitting}
+                >
+                  {editSubmitting ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             </form>

@@ -113,3 +113,44 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+// PATCH: Update an existing dataset definition
+export async function PATCH(req: NextRequest) {
+  try {
+    await connectToDatabase();
+    
+    // Check auth
+    if (!validateAdminSecret(req.headers)) {
+      return NextResponse.json({ error: 'Unauthorized admin access' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ error: 'Missing dataset ID parameter' }, { status: 400 });
+    }
+
+    const body = await req.json();
+    const { name, description, schemaFields, searchableFields, uniqueKeys } = body;
+
+    // Find dataset
+    const dataset = await Dataset.findById(id);
+    if (!dataset) {
+      return NextResponse.json({ error: 'Dataset not found' }, { status: 404 });
+    }
+
+    // Update fields
+    if (name) dataset.name = name;
+    if (description !== undefined) dataset.description = description;
+    if (schemaFields) dataset.schemaFields = schemaFields.map((s: string) => s.trim());
+    if (searchableFields) dataset.searchableFields = searchableFields.map((s: string) => s.trim());
+    if (uniqueKeys) dataset.uniqueKeys = uniqueKeys.map((s: string) => s.trim());
+
+    await dataset.save();
+
+    return NextResponse.json(dataset);
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
