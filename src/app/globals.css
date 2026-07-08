@@ -557,7 +557,7 @@ body {
 /* Datasets page styles */
 .dataset-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 20px;
 }
 
@@ -703,22 +703,25 @@ body {
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.7);
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* aligns to start so users can scroll down */
   justify-content: center;
   z-index: 200;
   backdrop-filter: blur(4px);
+  overflow-y: auto; /* enable scrolling when height exceeds screen */
+  padding: 40px 0; /* padding buffer at top/bottom */
 }
 
 .modal-content {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-card);
-  width: 500px;
-  max-width: 90%;
+  width: 520px;
+  max-width: 92%;
   padding: 28px;
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
   position: relative;
   animation: modalFadeIn 0.3s ease-out;
+  margin: auto; /* centers vertically inside flex container if screen allows */
 }
 
 @keyframes modalFadeIn {

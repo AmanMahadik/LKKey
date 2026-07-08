@@ -7,6 +7,7 @@ import { ApiKey } from '@/models/ApiKey';
 import { UploadLog } from '@/models/UploadLog';
 import SvgChart from '@/components/SvgChart';
 import SvgDonut from '@/components/SvgDonut';
+import OnboardingGuide from '@/components/OnboardingGuide';
 import { 
   Database, 
   TableProperties, 
@@ -152,6 +153,9 @@ export default async function DashboardPage() {
         <h1 className="page-title" style={{ fontSize: '32px' }}>Aman Mahadik</h1>
         <p className="page-subtitle">Here&apos;s what&apos;s happening with your data infrastructure.</p>
       </header>
+
+      {/* Quick Start Guide */}
+      <OnboardingGuide />
 
       {/* Top Statistics Cards Grid */}
       <div className="dashboard-grid">
