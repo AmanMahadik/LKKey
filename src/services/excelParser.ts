@@ -29,9 +29,17 @@ const RTO_STATE_MAP: Record<string, string> = {
   HP: 'Himachal Pradesh',
   JK: 'Jammu and Kashmir',
   GA: 'Goa',
-  CG: 'Chhattisgarh',
-  AS: 'Assam'
+  'CG': 'Chhattisgarh',
+  'AS': 'Assam'
 };
+
+/**
+ * Normalizes strings by removing all non-alphanumeric characters and converting to lowercase.
+ * This ensures "RTO Code", "rto-code", and "rto_code" all normalize to "rtocode".
+ */
+function normalizeString(str: string): string {
+  return str.toLowerCase().replace(/[^a-z0-9]/g, '');
+}
 
 /**
  * Helper to convert column index to Excel column letter (0 -> A, 1 -> B, 26 -> AA)
@@ -80,11 +88,11 @@ export function parseExcelBuffer(buffer: Buffer, schemaFields: string[]): ExcelP
 
     firstRow.forEach((cell, idx) => {
       if (typeof cell === 'string') {
-        const valClean = cell.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_');
+        const normCell = normalizeString(cell);
         
-        // Match exact or contains
         required.forEach(field => {
-          if (valClean === field || valClean.includes(field) || field.includes(valClean)) {
+          const normField = normalizeString(field);
+          if (normCell === normField || normCell.includes(normField) || normField.includes(normCell)) {
             headerMap[idx] = field;
             isHeaderRow = true;
           }
@@ -98,13 +106,14 @@ export function parseExcelBuffer(buffer: Buffer, schemaFields: string[]): ExcelP
     let stateColIndex = -1;
 
     if (isHeaderRow) {
-      // Find mapped indices from headers
+      // Find mapped indices from headers using normalized matching
       Object.keys(headerMap).forEach(key => {
         const idx = parseInt(key, 10);
         const field = headerMap[idx];
-        if (field === 'rto_code') rtoColIndex = idx;
-        if (field === 'city') cityColIndex = idx;
-        if (field === 'state') stateColIndex = idx;
+        const normField = normalizeString(field);
+        if (normField === 'rtocode') rtoColIndex = idx;
+        if (normField === 'city') cityColIndex = idx;
+        if (normField === 'state') stateColIndex = idx;
       });
     } else {
       // SMART VALUE-BASED DETECTION (For sheets without headers like the Maharashtra RTO Excel)
@@ -231,15 +240,19 @@ export function parseExcelBuffer(buffer: Buffer, schemaFields: string[]): ExcelP
         stateVal = RTO_STATE_MAP[prefix] || 'Maharashtra'; // fallback to Maharashtra
       }
 
-      // Write schema fields to record
-      if (schemaFields.includes('rto_code')) rowRecord['rto_code'] = rtoVal;
-      if (schemaFields.includes('city')) rowRecord['city'] = cityVal;
-      if (schemaFields.includes('state')) rowRecord['state'] = stateVal;
+      // Write schema fields to record using the exact schema key
+      const rtoField = schemaFields.find(f => normalizeString(f) === 'rtocode');
+      const cityField = schemaFields.find(f => normalizeString(f) === 'city');
+      const stateField = schemaFields.find(f => normalizeString(f) === 'state');
+
+      if (rtoField) rowRecord[rtoField] = rtoVal;
+      if (cityField) rowRecord[cityField] = cityVal;
+      if (stateField) rowRecord[stateField] = stateVal;
 
       // Validate required fields
       const missingFields: string[] = [];
-      if (schemaFields.includes('rto_code') && !rtoVal) missingFields.push('rto_code');
-      if (schemaFields.includes('city') && !cityVal) missingFields.push('city');
+      if (rtoField && !rtoVal) missingFields.push(rtoField);
+      if (cityField && !cityVal) missingFields.push(cityField);
 
       if (missingFields.length > 0) {
         errors.push(`Row ${rowNum}: Could not map required fields: ${missingFields.join(', ')}`);
