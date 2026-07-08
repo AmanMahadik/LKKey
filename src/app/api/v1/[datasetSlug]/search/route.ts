@@ -62,7 +62,7 @@ export async function GET(
     }
 
     // 5. Fetch all records from database for this dataset
-    const records = await RecordModel.find({ datasetId: dataset._id });
+    const records = await RecordModel.find({ datasetId: dataset._id }).lean();
 
     // 6. Run fuzzy search
     const results = searchRecords(records, query, dataset.searchableFields);
