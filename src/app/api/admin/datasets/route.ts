@@ -70,3 +70,46 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+// DELETE: Delete a dataset and its associated records & upload logs
+export async function DELETE(req: NextRequest) {
+  try {
+    await connectToDatabase();
+    
+    // Check auth
+    if (!validateAdminSecret(req.headers)) {
+      return NextResponse.json({ error: 'Unauthorized admin access' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ error: 'Missing dataset ID parameter' }, { status: 400 });
+    }
+
+    // Find dataset first
+    const dataset = await Dataset.findById(id);
+    if (!dataset) {
+      return NextResponse.json({ error: 'Dataset not found' }, { status: 404 });
+    }
+
+    // Import models inline to prevent circular references if any
+    const { RecordModel } = require('@/models/Record');
+    const { UploadLog } = require('@/models/UploadLog');
+
+    // Cascading deletion
+    await RecordModel.deleteMany({ datasetId: dataset._id });
+    await UploadLog.deleteMany({ datasetId: dataset._id });
+    
+    // Delete the dataset itself
+    await Dataset.findByIdAndDelete(id);
+
+    return NextResponse.json({ 
+      success: true, 
+      message: `Dataset "${dataset.name}" and all associated records deleted successfully.` 
+    });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}

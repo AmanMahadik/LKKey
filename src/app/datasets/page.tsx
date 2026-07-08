@@ -151,6 +151,32 @@ export default function DatasetsPage() {
     }
   }
 
+  async function handleDeleteDataset(id: string, name: string) {
+    if (!window.confirm(`Are you sure you want to delete the dataset "${name}"? This will permanently delete the schema definition AND all associated records and logs.`)) {
+      return;
+    }
+    
+    try {
+      const res = await fetch(`/api/admin/datasets?id=${id}`, {
+        method: 'DELETE',
+        headers: {
+          'x-admin-secret': adminSecret
+        }
+      });
+      
+      if (!res.ok) {
+        const errData = await res.json();
+        alert(errData.error || 'Failed to delete dataset');
+        return;
+      }
+      
+      // Update local state
+      setDatasets(datasets.filter(ds => ds._id !== id));
+    } catch (err: any) {
+      alert(err.message || 'Error occurred during deletion');
+    }
+  }
+
   return (
     <div className="page-container">
       {/* Page Header */}
@@ -234,8 +260,27 @@ export default function DatasetsPage() {
                   <h3 className="dataset-card-title">{ds.name}</h3>
                   <span className="dataset-card-slug">{ds.slug}</span>
                 </div>
-                <div className="dataset-card-icon">
-                  <Database size={18} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <button 
+                    onClick={() => handleDeleteDataset(ds._id, ds.name)}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: 'var(--text-muted)',
+                      cursor: 'pointer',
+                      padding: '4px',
+                      borderRadius: '4px',
+                      transition: 'var(--transition)'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-danger)'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+                    title="Delete Dataset"
+                  >
+                    <Trash size={16} />
+                  </button>
+                  <div className="dataset-card-icon">
+                    <Database size={18} />
+                  </div>
                 </div>
               </div>
               
