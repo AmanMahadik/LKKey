@@ -12,6 +12,8 @@ import {
   BarChart3, 
   Settings 
 } from 'lucide-react';
+import { UserButton, useUser } from '@clerk/nextjs';
+import ThemeSwitcher from './ThemeSwitcher';
 
 interface SidebarProps {
   stats?: {
@@ -22,6 +24,7 @@ interface SidebarProps {
 
 export default function Sidebar({ stats = { requestCount: 8421, requestLimit: 20000 } }: SidebarProps) {
   const pathname = usePathname();
+  const { user, isLoaded } = useUser();
   
   const menuItems = [
     { name: 'Dashboard', path: '/', icon: LayoutDashboard },
@@ -82,13 +85,33 @@ export default function Sidebar({ stats = { requestCount: 8421, requestLimit: 20
 
         {/* Profile Segments */}
         <div className="sidebar-footer">
-          <div className="sidebar-profile">
-            <div className="avatar">AM</div>
-            <div className="profile-info">
-              <span className="profile-name">Aman Mahadik</span>
-              <span className="profile-role">Founder & Developer</span>
+          {isLoaded && user ? (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+              <div className="sidebar-profile" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <UserButton />
+                <div className="profile-info">
+                  <span className="profile-name" style={{ fontSize: '13px', fontWeight: '600' }}>
+                    {user.fullName || user.primaryEmailAddress?.emailAddress.split('@')[0] || 'User'}
+                  </span>
+                  <span className="profile-role" style={{ fontSize: '10px' }}>
+                    Logged In Admin
+                  </span>
+                </div>
+              </div>
+              <ThemeSwitcher />
             </div>
-          </div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+              <div className="sidebar-profile" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div className="avatar">AM</div>
+                <div className="profile-info">
+                  <span className="profile-name">Aman Mahadik</span>
+                  <span className="profile-role">Founder & Developer</span>
+                </div>
+              </div>
+              <ThemeSwitcher />
+            </div>
+          )}
         </div>
       </div>
     </aside>

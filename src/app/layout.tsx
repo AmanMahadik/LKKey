@@ -3,6 +3,8 @@ import './globals.css';
 import Sidebar from '@/components/Sidebar';
 import { connectToDatabase } from '@/services/db';
 import { ApiKey } from '@/models/ApiKey';
+import { ClerkProvider } from '@clerk/nextjs';
+import { ThemeProvider } from '@/components/ThemeContext';
 
 export const metadata: Metadata = {
   title: 'LKKey — Smart Lookup Infrastructure',
@@ -37,12 +39,16 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body>
-        <div className="layout-container">
-          <Sidebar stats={stats} />
-          <div className="main-wrapper">
-            {children}
-          </div>
-        </div>
+        <ClerkProvider>
+          <ThemeProvider>
+            <div className="layout-container">
+              <Sidebar stats={stats} />
+              <div className="main-wrapper">
+                {children}
+              </div>
+            </div>
+          </ThemeProvider>
+        </ClerkProvider>
       </body>
     </html>
   );

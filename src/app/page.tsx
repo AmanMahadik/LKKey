@@ -8,6 +8,8 @@ import { UploadLog } from '@/models/UploadLog';
 import SvgChart from '@/components/SvgChart';
 import SvgDonut from '@/components/SvgDonut';
 import OnboardingGuide from '@/components/OnboardingGuide';
+import ThemeSwitcher from '@/components/ThemeSwitcher';
+import { currentUser } from '@clerk/nextjs/server';
 import { 
   Database, 
   TableProperties, 
@@ -116,6 +118,11 @@ function getRelativeTimeString(date: Date): string {
 
 export default async function DashboardPage() {
   const data = await getDashboardData();
+  const user = await currentUser();
+  const userName = user ? (user.firstName || user.username || 'Aman Mahadik') : 'Aman Mahadik';
+  const userInitials = user ? 
+    ((user.firstName ? user.firstName[0] : '') + (user.lastName ? user.lastName[0] : '')).toUpperCase() || 'AM'
+    : 'AM';
 
   // Top Search Queries (mock distribution matching screenshot)
   const topQueries = [
@@ -134,6 +141,7 @@ export default async function DashboardPage() {
           <input type="text" placeholder="Search datasets, records, and more...   ⌘ K" disabled />
         </div>
         <div className="nav-actions">
+          <ThemeSwitcher />
           <Link href="/datasets" className="btn-primary">
             <Plus size={16} />
             <span>Create Dataset</span>
@@ -142,7 +150,7 @@ export default async function DashboardPage() {
             <Bell size={16} />
           </button>
           <div className="avatar" style={{ border: '1px solid var(--accent-primary)', color: 'var(--accent-glow)' }}>
-            AM
+            {userInitials}
           </div>
         </div>
       </div>
@@ -150,7 +158,7 @@ export default async function DashboardPage() {
       {/* Greeting Header */}
       <header className="page-header">
         <h2 className="page-subtitle">Welcome back,</h2>
-        <h1 className="page-title" style={{ fontSize: '32px' }}>Aman Mahadik</h1>
+        <h1 className="page-title" style={{ fontSize: '32px' }}>{userName}</h1>
         <p className="page-subtitle">Here&apos;s what&apos;s happening with your data infrastructure.</p>
       </header>
 
