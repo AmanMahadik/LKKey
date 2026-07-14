@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { UserButton, useUser } from '@clerk/nextjs';
 import ThemeSwitcher from './ThemeSwitcher';
+import Logo from './Logo';
 
 interface SidebarProps {
   stats?: {
@@ -41,8 +42,8 @@ export default function Sidebar({ stats = { requestCount: 8421, requestLimit: 20
   return (
     <aside className="sidebar">
       <div>
-        <div className="sidebar-logo-container">
-          <img src="/logo.png" alt="LKKey Logo" className="sidebar-logo" />
+        <div className="sidebar-logo-container" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <Logo size={36} />
           <div>
             <h1 className="sidebar-brand-name">LKKey</h1>
             <p className="sidebar-tagline">Forge Data. Find Clarity.</p>
