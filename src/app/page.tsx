@@ -10,6 +10,7 @@ import SvgDonut from '@/components/SvgDonut';
 import OnboardingGuide from '@/components/OnboardingGuide';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import { currentUser } from '@clerk/nextjs/server';
+import { UserButton } from '@clerk/nextjs';
 import { 
   Database, 
   TableProperties, 
@@ -149,8 +150,8 @@ export default async function DashboardPage() {
           <button className="btn-secondary" style={{ padding: '10px' }}>
             <Bell size={16} />
           </button>
-          <div className="avatar" style={{ border: '1px solid var(--accent-primary)', color: 'var(--accent-glow)' }}>
-            {userInitials}
+          <div className="avatar" style={{ border: 'none', background: 'transparent', width: 'auto', height: 'auto', padding: 0 }}>
+            <UserButton />
           </div>
         </div>
       </div>
